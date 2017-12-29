@@ -1,8 +1,8 @@
 # Using SSH public key authentication with Cisco
 
-## 1 Configuration
+## Configuration
 
-### 1.1 Locate your public key
+### Locate your public key
 
 Find the file that contains your public key. Note that Cisco only supports ssh-rsa keys; if you are using a DSA key then you'll need to generate a new key pair.
 
@@ -13,7 +13,7 @@ $ cat ~/.ssh/id_rsa.pub
 ```
 and it should start with "ssh-rsa"
 
-### 1.2 Wrap the key onto multiple lines
+### Wrap the key onto multiple lines
 
 Cisco does not accept the entire key pasted into one long line, so you need to break it into multiple lines. The maximum line length at the Cisco CLI is 254 characters, but it's convenient to wrap smaller than this so that it fits on a terminal line.
 ```
@@ -21,7 +21,7 @@ $ fold -b -w 72 ~/.ssh/id_rsa.pub
 ```
 Then copy this into your clipboard.
 
-### 1.3 Add your public key against the desired user
+### Add your public key against the desired user
 
 For example, if you have an existing user 'nsrc' and want to enable logins with your public key, enter the following configuration on your Cisco:
 ```
@@ -36,7 +36,7 @@ Remember to hit Enter after the command key-string before pasting your key; and 
 
 If you tried to use the wrong sort of key (e.g. a DSA key) you will see an error at this point.
 
-### 1.4 Verify
+### Verify
 
 `show run | beg pubkey`
 
@@ -52,7 +52,7 @@ Note that the configuration doesn't show the actual public key, but its fingerpr
 $ ssh-keygen -l -f ~/.ssh/id_rsa.pub
 2048 ef:f4:04:92:d1:d6:bf:5d:0b:68:49:11:28:45:6d:27  yourname@yourdomain.example (RSA)
 ```
-### 1.5 Testing
+### Testing
 
 You should now be able to login as the given user using your public key to authenticate - that is, you should no longer be prompted for the local password on the Cisco.
 
@@ -63,9 +63,9 @@ Under Linux, ssh-add -l will list all the keys your agent knows about and has un
 $ ssh-add -d
 $ ssh-add -a
 ```
-## 2 Additional information
+## Additional information
 
-### 2.1 Security settings
+### Security settings
 
 You should disable the obsolete SSH version 1 protocol:
 
@@ -76,7 +76,7 @@ And once you are sure that ssh is working correctly (with or without ssh key aut
 line vty 0 15
  transport input ssh
 ```
-### 2.2 Multiple keys
+### Multiple keys
 
 It is possible to have multiple public keys against the same user in the configuration, so that multiple people can login using the same account. Just add further keys as shown above. When you show the configuration, it will look like this:
 ```
@@ -85,13 +85,13 @@ ip ssh pubkey-chain
    key-hash ssh-rsa EFF40492D1D6BF5D0B68491128456D27 yourname@yourdomain.example
    key-hash ssh-rsa 768CD77578B0C1B55BCC0C3549D3E573 another@yourdomain.example
 ```
-### 2.3 Removing passwords
+### Removing passwords
 
 You can remove passwords from users in the configuration; this will force those users to use ssh key authentication. If these people require admin rights they will either still need to know the enable secret, or their login can drop them directly into enable mode:
 
 `username foo privilege 15`
 
-### 2.4 Disable passwords entirely
+### Disable passwords entirely
 
 If you wish to disable password authentication entirely over ssh, but leave passwords on user accounts for other purposes (e.g. console access), then use:
 ```
