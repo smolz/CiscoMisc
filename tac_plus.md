@@ -34,6 +34,7 @@
   You will need to permit the commands that they’re allowed to use. 
   Service = exec and priv-lvl = 2 allows us to give a higher privilege than an ordinary user. 
   We do not want to give this group a privilege level of 15, meaning the same level as the Network Admins.
+  
   `sudo nano /etc/tacacs+/tac_plus.conf`
 
   ```
@@ -90,4 +91,63 @@
   aaa authorization commands 15 default group tac_plus if-authenticated 
   !
   ```
-    
+
+
+## Setup tacacs+ to use 2FA with Google Authenticator
+
+* ### Install Google Authenticator on Ubuntu Server
+  `sudo apt install libpam-google-authenticator -y`
+
+* ### Configure tac_plus
+
+  `sudo nano /etc/tacacs+/tac_plus.conf`
+  
+  Change the group section from this:
+  ```
+   group = Network_Admins {
+    default service = permit
+    login = file /etc/passwd
+    enable = file /etc/passwd
+    service = exec {
+    priv-lvl = 15
+    }
+  }
+  ```
+  To this:
+  ```
+   group = Network_Admins {
+    default service = permit
+    login = PAM
+    enable = file /etc/passwd
+    service = exec {
+    priv-lvl = 15
+    }
+  }
+* ### Restart tac_plus daemon
+  `sudo service tacacs+ restart`
+  
+* ### Generate Google Authenticator Secret Key
+  You will need to do from each account that you need to use this.  So you will have to:
+
+  `su USERNAME`
+  
+  Then run:
+  
+  `google-authenticator`
+  
+  Answer 'y' for the 1st/2nd/3rd and 5th questions and NO to the 4th
+  
+  #### In the output will be a QR code that you can scan with the Google Authenticator app on your smartphone.
+  
+ Alternatively, we could use the same secret key(s) from another system with Google Authenticator.
+ Just copy the file from the location below and put it in the appropriate users home folder.
+ 
+ `~/.google_authenticator`
+ 
+* ### Verify
+  When you ssh to the device you will be prompted to enter your password and key i.e. `password123456`
+  ```
+  $ ssh engineer@10.10.10.10
+  Password & verification code:
+  R1#
+  ```
